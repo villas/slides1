@@ -53,17 +53,13 @@ class PropertySlideshow {
     async loadProperties() {
         try {
             // Try to fetch from API first using CORS proxy for GitHub Pages compatibility
-            const apiUrl = 'https://ivvdata.algarvevillaclub.com/datafeed/properties.json?type=saleonly';
-            const response = await fetch(apiUrl, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36'
-                }
-            });
+            const corsProxy = 'https://api.allorigins.win/get?url=';
+            const apiUrl = encodeURIComponent('https://ivvdata.algarvevillaclub.com/datafeed/properties.json?type=saleonly');
+            const response = await fetch(corsProxy + apiUrl);
 
             if (response.ok) {
-                const data = await response.json();
+                const proxyData = await response.json();
+                const data = JSON.parse(proxyData.contents);
 
                 // Filter and process properties
                 this.properties = data.properties
@@ -86,9 +82,9 @@ class PropertySlideshow {
                     throw new Error('No properties with images found');
                 }
 
-                console.log(`Loaded ${this.properties.length} properties from API`);
+                console.log(`Loaded ${this.properties.length} properties from API via CORS proxy`);
             } else {
-                throw new Error(`API returned ${response.status}: ${response.statusText}`);
+                throw new Error(`CORS proxy returned ${response.status}: ${response.statusText}`);
             }
 
             // Preload images for smooth transitions
