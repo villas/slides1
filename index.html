@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Estate Slideshow</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="slideshow-container" role="application" aria-label="Property slideshow">
+        <!-- Property Image -->
+        <div class="property-image">
+            <img id="propertyImg" src="" alt="Property image" loading="lazy">
+            <div class="image-overlay"></div>
+        </div>
+
+        <!-- Property Details -->
+        <div class="property-details">
+            <div class="property-header">
+                <h1 id="propertyTitle">Loading properties...</h1>
+                <div class="property-price" id="propertyPrice"></div>
+            </div>
+
+            <div class="property-location" id="propertyLocation"></div>
+
+            <div class="property-features">
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <span class="feature-icon">🛏️</span>
+                        <span class="feature-label">Bedrooms</span>
+                        <span class="feature-value" id="bedrooms">-</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🚿</span>
+                        <span class="feature-label">Bathrooms</span>
+                        <span class="feature-value" id="bathrooms">-</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📐</span>
+                        <span class="feature-label">Area</span>
+                        <span class="feature-value" id="area">-</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🏠</span>
+                        <span class="feature-label">Type</span>
+                        <span class="feature-value" id="propertyType">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="property-description">
+                <p id="propertyDescription"></p>
+            </div>
+        </div>
+
+        <!-- Navigation Controls -->
+        <div class="navigation-controls">
+            <button class="nav-btn" id="prevBtn" aria-label="Previous property">
+                <span class="nav-icon">◀</span>
+            </button>
+
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="slide-counter" id="slideCounter">0/0</div>
+            </div>
+
+            <button class="nav-btn" id="playPauseBtn" aria-label="Play/Pause slideshow">
+                <span class="nav-icon" id="playPauseIcon">⏸️</span>
+            </button>
+
+            <button class="nav-btn" id="nextBtn" aria-label="Next property">
+                <span class="nav-icon">▶</span>
+            </button>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div class="loading-indicator" id="loadingIndicator">
+            <div class="spinner"></div>
+            <p>Loading properties...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" id="errorMessage">
+            <p>Unable to load properties. Please try again later.</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

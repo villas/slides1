@@ -1,51 +1,57 @@
-# slides1
-Slideshow using any monitor incl TVs
+# Real Estate Slideshow
 
+A responsive real estate property slideshow that displays Algarve properties from the Algarve Villa Club API.
 
+## Features
 
-This PR implements a comprehensive real estate slideshow system that displays property information from a Firebird database with images from the Linux filesystem, designed to work seamlessly across all screen sizes including large format TVs.
-Features Implemented
+- 📱 **Responsive Design**: Adapts from mobile to TV screens
+- 🏠 **Property Display**: Shows images, prices, locations, and details
+- ⌨️ **Universal Navigation**: Keyboard, touch, and mouse controls
+- 🎬 **Auto-advancing Slideshow**: 8-second intervals with play/pause
+- 📊 **Progress Indicators**: Visual progress bar and slide counter
+- ♿ **Accessibility**: ARIA labels and keyboard navigation
 
-📱 Responsive Design System
+## Controls
 
-    CSS Grid layout that adapts from mobile (768px) to large TVs (1920px+)
-    Vertical stacking on mobile/tablet, side-by-side layout on desktop/TV
-    Font scaling optimized for viewing distances on different screen types
-    Professional gradient backgrounds with smooth animations
+- **Arrow Keys**: Navigate between properties
+- **Spacebar**: Play/pause slideshow
+- **Home/End**: Jump to first/last property
+- **Touch/Swipe**: Mobile navigation
+- **Mouse Clicks**: Click left/right side of image
 
-🏠 Property Display Components
+## Local Development
 
-    Brief property details (title, price, location, features)
-    Feature grid showing bedrooms, bathrooms, square m, property type
-    Full property descriptions with scrollable content
-    Price formatting with proper currency display
+```bash
+# Start local server
+python3 -m http.server 8000
+# or
+node server.js
 
-⌨️ Universal Navigation System
+# Open http://localhost:8000
+```
 
-    Keyboard controls: Arrow keys for navigation, spacebar for play/pause, Home/End for first/last
-    Touch/swipe gestures for mobile devices
-    Mouse click controls for desktop
-    TV remote directional key compatibility
+## GitHub Pages Deployment
 
-🎬 Professional Slideshow Features
+1. Create a new GitHub repository
+2. Upload all files (`index.html`, `styles.css`, `script.js`)
+3. Go to repository Settings → Pages
+4. Set source to "Deploy from a branch"
+5. Select "main" branch and "/ (root)" folder
+6. Save and wait for deployment
 
-    Auto-advance with 8-second intervals (configurable)
-    Smooth fade transitions between properties
-    Play/pause functionality with visual indicators
-    Progress bar and slide counter (1/3, 2/3, etc.)
-    Image preloading for seamless transitions
+The slideshow will be available at: `https://yourusername.github.io/repository-name/`
 
-🔗 Backend 
+## API Integration
 
-    An existing source of info is available here: https://ivvdata.algarvevillaclub.com/datafeed/properties.json?type=saleonly
+Fetches property data from: `https://ivvdata.algarvevillaclub.com/datafeed/properties.json?type=saleonly`
 
-Implementation
+If CORS issues occur, falls back to sample data.
 
-The system uses pure HTML/CSS/JavaScript for maximum compatibility across browsers and devices. Key technical decisions:
+## Browser Compatibility
 
-    CSS Grid for responsive layouts that maintain proper proportions on any screen
-    Fetch API for modern, promise-based backend communication
-    Intersection Observer patterns for performance optimization
-    ARIA labels and screen reader support for accessibility
-    CSS Custom Properties for easy theme customization
-
+Works on all modern browsers including:
+- Chrome/Chromium
+- Firefox
+- Safari
+- Edge
+- LG WebOS (TV browsers)
