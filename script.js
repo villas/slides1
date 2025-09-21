@@ -71,7 +71,7 @@ class PropertySlideshow {
                         location: property.areaname || 'Location not specified',
                         bedrooms: property.bedrooms || 0,
                         bathrooms: property.bathrooms || 0,
-                        area: 'N/A', // API doesn't provide area data
+                        area: property.areaname || 'Location not specified', // Show location in area field
                         type: property.ptypedescription || 'Property',
                         description: property.description || 'No description available.',
                         images: property.imagegallery,
