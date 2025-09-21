@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Estate Slideshow</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="slideshow-container">
+        <!-- Loading indicator -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Loading properties...</p>
+        </div>
+
+        <!-- Main slideshow area -->
+        <div class="slide-wrapper" id="slideWrapper">
+            <div class="slide active" id="currentSlide">
+                <!-- Property content will be dynamically loaded here -->
+            </div>
+        </div>
+
+        <!-- Navigation controls -->
+        <div class="controls">
+            <button class="nav-btn prev-btn" id="prevBtn" aria-label="Previous property">
+                <span>&#8249;</span>
+            </button>
+            <button class="nav-btn next-btn" id="nextBtn" aria-label="Next property">
+                <span>&#8250;</span>
+            </button>
+            <button class="nav-btn play-pause-btn" id="playPauseBtn" aria-label="Play/Pause slideshow">
+                <span id="playPauseIcon">⏸️</span>
+            </button>
+        </div>
+
+        <!-- Progress indicator -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+            <div class="slide-counter">
+                <span id="currentSlideNum">1</span> / <span id="totalSlides">0</span>
+            </div>
+        </div>
+
+        <!-- Error message -->
+        <div class="error-message" id="errorMessage" style="display: none;">
+            <h2>Unable to load properties</h2>
+            <p>Please check your connection and try again.</p>
+            <button onclick="window.location.reload()">Retry</button>
+        </div>
+    </div>
+
+    <!-- Preload next slide for smooth transitions -->
+    <div class="slide-preload" id="nextSlidePreload" style="display: none;"></div>
+
+    <script src="api.js"></script>
+    <script src="slideshow.js"></script>
+</body>
+</html>
