@@ -74,8 +74,8 @@ class PropertySlideshow {
                         area: property.propcode || 'N/A', // Show property reference code
                         type: property.ptypedescription || 'Property',
                         description: property.description || 'No description available.',
-                        images: property.imagegallery,
-                        mainImage: property.imagegallery[0]
+                        images: property.imagegallery.map(img => img.replace('pics_lg', 'pics')),
+                        mainImage: property.imagegallery[0].replace('pics_lg', 'pics')
                     }));
 
                 if (this.properties.length === 0) {
