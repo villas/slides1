@@ -52,7 +52,65 @@ class PropertySlideshow {
 
     async loadProperties() {
         try {
-            // Try to fetch from API first using CORS proxy for GitHub Pages compatibility
+            // First try to load from curated slideshow list
+            const listResponse = await fetch('/api/slideshow-list');
+            if (listResponse.ok) {
+                const listData = await listResponse.json();
+                this.properties = [];
+
+                for (const item of listData) {
+                    if (item.type === 'MSG') {
+                        // Handle message items
+                        this.properties.push({
+                            id: `msg-${Date.now()}`,
+                            title: item.message,
+                            price: '',
+                            location: '',
+                            bedrooms: '',
+                            bathrooms: '',
+                            area: '',
+                            type: 'Message',
+                            description: item.message,
+                            images: [],
+                            mainImage: '',
+                            isMessage: true,
+                            backgroundColor: item.bgcolor ? this.getColorValue(item.bgcolor) : '',
+                            displayTime: item.secs || 4000
+                        });
+                    } else if (item.type === 'RENT') {
+                        // Handle rental properties
+                        const rentalData = await this.loadRentalProperty(item.ref);
+                        if (rentalData) {
+                            this.properties.push(rentalData);
+                        }
+                    } else {
+                        // Handle sales properties (default)
+                        const salesData = await this.loadSalesProperty(item.ref);
+                        if (salesData) {
+                            this.properties.push(salesData);
+                        }
+                    }
+                }
+
+                if (this.properties.length > 0) {
+                    console.log(`Loaded ${this.properties.length} curated items from slideshow list`);
+                    this.preloadImages();
+                    return;
+                }
+            }
+
+            // Fallback to full API if list fails
+            await this.loadFromAPI();
+
+        } catch (error) {
+            console.error('Failed to load from slideshow list, falling back to API:', error);
+            await this.loadFromAPI();
+        }
+    }
+
+    async loadFromAPI() {
+        // Original API loading logic as fallback
+        try {
             const corsProxy = 'https://api.allorigins.win/get?url=';
             const apiUrl = encodeURIComponent('https://ivvdata.algarvevillaclub.com/datafeed/properties.json?type=saleonly');
             const response = await fetch(corsProxy + apiUrl);
@@ -61,7 +119,6 @@ class PropertySlideshow {
                 const proxyData = await response.json();
                 const data = JSON.parse(proxyData.contents);
 
-                // Filter and process properties
                 this.properties = data.properties
                     .filter(property => property.imagegallery && property.imagegallery.length > 0)
                     .map(property => ({
@@ -71,31 +128,93 @@ class PropertySlideshow {
                         location: property.areaname || 'Location not specified',
                         bedrooms: property.bedrooms || 0,
                         bathrooms: property.bathrooms || 0,
-                        area: property.propcode || 'N/A', // Show property reference code
+                        area: property.propcode || 'N/A',
                         type: property.ptypedescription || 'Property',
                         description: property.description || 'No description available.',
                         images: property.imagegallery.map(img => img.replace('pics_lg', 'pics')),
                         mainImage: property.imagegallery[0].replace('pics_lg', 'pics')
                     }));
 
-                if (this.properties.length === 0) {
-                    throw new Error('No properties with images found');
-                }
-
                 console.log(`Loaded ${this.properties.length} properties from API via CORS proxy`);
             } else {
                 throw new Error(`CORS proxy returned ${response.status}: ${response.statusText}`);
             }
 
-            // Preload images for smooth transitions
             this.preloadImages();
 
         } catch (error) {
             console.error('Failed to load properties from API, using mock data:', error);
-            // Use mock data as fallback
             this.properties = this.getMockProperties();
             this.preloadImages();
         }
+    }
+
+    async loadSalesProperty(propRef) {
+        try {
+            const corsProxy = 'https://api.allorigins.win/get?url=';
+            const apiUrl = encodeURIComponent('https://ivvdata.algarvevillaclub.com/datafeed/properties.json?type=saleonly');
+            const response = await fetch(corsProxy + apiUrl);
+
+            if (response.ok) {
+                const proxyData = await response.json();
+                const data = JSON.parse(proxyData.contents);
+
+                const property = data.properties.find(p =>
+                    p.propcode == propRef ||
+                    p.id == propRef
+                );
+
+                if (property && property.imagegallery && property.imagegallery.length > 0) {
+                    return {
+                        id: property.propcode,
+                        title: property.title || 'Untitled Property',
+                        price: this.formatPrice(property.price),
+                        location: property.areaname || 'Location not specified',
+                        bedrooms: property.bedrooms || 0,
+                        bathrooms: property.bathrooms || 0,
+                        area: property.propcode || 'N/A',
+                        type: property.ptypedescription || 'Property',
+                        description: property.description || 'No description available.',
+                        images: property.imagegallery.map(img => img.replace('pics_lg', 'pics')),
+                        mainImage: property.imagegallery[0].replace('pics_lg', 'pics')
+                    };
+                }
+            }
+        } catch (error) {
+            console.error(`Failed to load sales property ${propRef}:`, error);
+        }
+        return null;
+    }
+
+    async loadRentalProperty(propRef) {
+        // For now, return a placeholder rental property
+        // In the future, this could integrate with your rental API
+        return {
+            id: propRef,
+            title: `Rental Property ${propRef}`,
+            price: 'Price on request',
+            location: 'Algarve',
+            bedrooms: 'TBD',
+            bathrooms: '',
+            area: propRef,
+            type: 'Rental',
+            description: `Luxury rental property ${propRef}. Contact us for availability and pricing.`,
+            images: [],
+            mainImage: '',
+            isRental: true
+        };
+    }
+
+    getColorValue(colorName) {
+        const colors = {
+            'yellow': '#ffd700',
+            'red': '#ff4444',
+            'blue': '#4444ff',
+            'green': '#44ff44',
+            'orange': '#ffaa44',
+            'purple': '#aa44ff'
+        };
+        return colors[colorName.toLowerCase()] || colorName;
     }
 
     getMockProperties() {
@@ -327,10 +446,30 @@ class PropertySlideshow {
     updateDisplay() {
         const property = this.properties[this.currentIndex];
 
+        // Handle message items differently
+        if (property.isMessage) {
+            this.showMessage(property);
+            return;
+        }
+
+        // Handle rental properties (no image)
+        if (property.isRental && !property.mainImage) {
+            this.showRentalProperty(property);
+            return;
+        }
+
+        // Default property display
+        this.showProperty(property);
+    }
+
+    showProperty(property) {
+        // Show property image section
+        this.elements.image.style.display = 'block';
+
         // Update image with fade effect
         this.elements.image.style.opacity = '0';
         setTimeout(() => {
-            this.elements.image.src = property.mainImage;
+            this.elements.image.src = property.mainImage || '';
             this.elements.image.alt = `Image of ${property.title}`;
             this.elements.image.style.opacity = '1';
         }, 150);
@@ -348,6 +487,69 @@ class PropertySlideshow {
         // Update progress and counter
         this.updateProgress();
         this.updateCounter();
+    }
+
+    showRentalProperty(property) {
+        // Hide image section for rentals without images
+        this.elements.image.style.display = 'none';
+
+        // Update text content
+        this.elements.title.textContent = property.title;
+        this.elements.price.textContent = property.price;
+        this.elements.location.textContent = property.location;
+        this.elements.bedrooms.textContent = property.bedrooms;
+        this.elements.bathrooms.textContent = property.bathrooms;
+        this.elements.area.textContent = property.area;
+        this.elements.propertyType.textContent = property.type;
+        this.elements.description.textContent = property.description;
+
+        // Update progress and counter
+        this.updateProgress();
+        this.updateCounter();
+    }
+
+    showMessage(message) {
+        // Hide image section for messages
+        this.elements.image.style.display = 'none';
+
+        // Clear property details
+        this.elements.title.textContent = '';
+        this.elements.price.textContent = '';
+        this.elements.location.textContent = '';
+        this.elements.bedrooms.textContent = '';
+        this.elements.bathrooms.textContent = '';
+        this.elements.area.textContent = '';
+        this.elements.propertyType.textContent = '';
+
+        // Show message content
+        this.elements.description.innerHTML = this.parseSimpleMessage(message.description);
+
+        // Apply background color if specified
+        if (message.backgroundColor) {
+            document.body.style.background = message.backgroundColor;
+            setTimeout(() => {
+                document.body.style.background = 'var(--primary-gradient)';
+            }, message.displayTime);
+        }
+
+        // Auto-advance after display time for messages
+        if (message.displayTime && this.isPlaying) {
+            setTimeout(() => {
+                if (this.isPlaying) {
+                    this.nextSlide();
+                }
+            }, message.displayTime);
+        }
+
+        // Update progress and counter
+        this.updateProgress();
+        this.updateCounter();
+    }
+
+    parseSimpleMessage(messageText) {
+        // Simple message parser - just display as plain text for now
+        // Could be enhanced later for basic formatting
+        return `<div style="font-size: 2rem; text-align: center; padding: 2rem;">${messageText}</div>`;
     }
 
     updateProgress() {

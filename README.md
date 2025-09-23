@@ -41,6 +41,40 @@ node server.js
 
 The slideshow will be available at: `https://yourusername.github.io/repository-name/`
 
+## Slideshow List Configuration
+
+Control the slideshow content via the `slideshow-list.txt` file. Each line specifies:
+
+### Sales Properties (numeric IDs)
+```
+6632 # 4 Bedroom Villa with Pool - Sales property
+6619 # 3 Bedroom Villa with Pool - Sales property
+```
+
+### Rental Properties (alphanumeric codes)
+```
+DD203 # Luxury Beachfront Villa - Rental property
+VL954 # Countryside Villa - Rental property
+```
+
+### Messages (with display options)
+```
+Limited Offer! Next property is 15% off!;bgcolor:yellow;secs:4
+Welcome to Algarve Villas!;bgcolor:blue;secs:3
+```
+
+### Format Rules:
+- **Sales**: Numeric codes (automatically detected)
+- **Rentals**: Alphanumeric codes (automatically detected)
+- **Messages**: Text with `;bgcolor:color;secs:time` parameters
+- **Comments**: Use `#` for comments
+- **Empty lines**: Ignored
+- **Lines starting with #**: Ignored
+
+### Color Options:
+- `yellow`, `red`, `blue`, `green`, `orange`, `purple`
+- Or use hex colors like `#ff0000`
+
 ## API Integration
 
 Fetches property data from: `https://ivvdata.algarvevillaclub.com/datafeed/properties.json?type=saleonly`

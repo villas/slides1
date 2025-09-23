@@ -7,6 +7,73 @@ const url = require('url');
 const server = http.createServer((req, res) => {
     const parsedUrl = url.parse(req.url, true);
 
+    // Handle slideshow list requests
+    if (parsedUrl.pathname === '/api/slideshow-list') {
+        console.log('Slideshow list request received');
+        const listPath = path.join(__dirname, 'slideshow-list.txt');
+
+        fs.readFile(listPath, 'utf8', (err, data) => {
+            if (err) {
+                console.error('Error reading slideshow list:', err);
+                res.writeHead(500, {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                });
+                res.end(JSON.stringify({ error: 'Failed to read slideshow list' }));
+                return;
+            }
+
+            // Parse the text file into structured data
+            const lines = data.split('\n').filter(line => line.trim() && !line.startsWith('#'));
+            const parsedList = lines.map(line => {
+                const [content, comment] = line.split('#').map(s => s.trim());
+                const [text, params] = content.split(';');
+
+                let type = 'SALE';
+                let ref = text.trim();
+                let message = '';
+                let bgcolor = '';
+                let secs = 4;
+
+                // Check if it's a message (contains special parameters)
+                if (params && (params.includes('bgcolor:') || params.includes('secs:'))) {
+                    type = 'MSG';
+                    message = text.trim();
+
+                    // Parse bgcolor and secs
+                    const paramList = params.split(';').map(p => p.trim());
+                    paramList.forEach(param => {
+                        if (param.startsWith('bgcolor:')) {
+                            bgcolor = param.split(':')[1];
+                        } else if (param.startsWith('secs:')) {
+                            secs = parseInt(param.split(':')[1]) || 4;
+                        }
+                    });
+                } else if (isNaN(ref)) {
+                    // Alphanumeric = rental property
+                    type = 'RENT';
+                }
+                // Numeric = sales property (default)
+
+                return {
+                    type,
+                    ref: ref,
+                    message: message,
+                    bgcolor: bgcolor,
+                    secs: secs * 1000, // Convert to milliseconds
+                    comment: comment || ''
+                };
+            });
+
+            res.writeHead(200, {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            });
+            res.end(JSON.stringify(parsedList));
+        });
+        return;
+    }
+
     // Handle API proxy requests
     if (parsedUrl.pathname === '/api/properties') {
         console.log('API proxy request received');

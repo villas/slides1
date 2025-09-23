@@ -1,0 +1,11 @@
+# Slideshow Property List
+# Format: PROPERTY_REF [;bgcolor:color;secs:time] [# comment]
+# SALES properties: numeric ID (e.g., 6632)
+# RENTAL properties: alphanumeric code (e.g., DD203, VL954)
+# MESSAGES: text message with bgcolor and secs parameters
+
+6632 # 4 Bedroom Villa with Pool - Sales property
+DD203 # Luxury Beachfront Villa - Rental property
+Limited Offer! Next property is 15% off!;bgcolor:yellow;secs:4
+VL954 # Countryside Villa - Rental property
+6619 # 3 Bedroom Villa with Pool - Sales property
