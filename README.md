@@ -43,7 +43,7 @@ The slideshow will be available at: `https://yourusername.github.io/repository-n
 
 ## Slideshow List Configuration
 
-Control the slideshow content via the `slideshow-list.txt` file. Each line specifies:
+Control the slideshow content via the `slideshow-list.txt` file. The server parses this file and builds complete property data.
 
 ### Sales Properties (numeric IDs)
 ```
@@ -64,12 +64,17 @@ Welcome to Algarve Villas!;bgcolor:blue;secs:3
 ```
 
 ### Format Rules:
-- **Sales**: Numeric codes (automatically detected)
-- **Rentals**: Alphanumeric codes (automatically detected)
+- **Sales**: Numeric codes (fetches from sales database)
+- **Rentals**: Alphanumeric codes (fetches from rental database)
 - **Messages**: Text with `;bgcolor:color;secs:time` parameters
 - **Comments**: Use `#` for comments
 - **Empty lines**: Ignored
 - **Lines starting with #**: Ignored
+
+### Server API:
+- **Endpoint**: `POST /ivvdata/datafeed/build_slideshow_data`
+- **Input**: `text_content` parameter with slideshow-list.txt content
+- **Output**: Complete JSON with all property details, images, pricing
 
 ### Color Options:
 - `yellow`, `red`, `blue`, `green`, `orange`, `purple`

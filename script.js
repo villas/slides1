@@ -52,60 +52,54 @@ class PropertySlideshow {
 
     async loadProperties() {
         try {
-            // First try to load from curated slideshow list
+            // Try to load from curated slideshow list via server API
             const listResponse = await fetch('/api/slideshow-list');
             if (listResponse.ok) {
                 const listData = await listResponse.json();
-                this.properties = [];
 
-                for (const item of listData) {
-                    if (item.type === 'MSG') {
-                        // Handle message items
-                        this.properties.push({
-                            id: `msg-${Date.now()}`,
-                            title: item.message,
-                            price: '',
-                            location: '',
-                            bedrooms: '',
-                            bathrooms: '',
-                            area: '',
-                            type: 'Message',
-                            description: item.message,
-                            images: [],
-                            mainImage: '',
-                            isMessage: true,
-                            backgroundColor: item.bgcolor ? this.getColorValue(item.bgcolor) : '',
-                            displayTime: item.secs || 4000
-                        });
-                    } else if (item.type === 'RENT') {
-                        // Handle rental properties
-                        const rentalData = await this.loadRentalProperty(item.ref);
-                        if (rentalData) {
-                            this.properties.push(rentalData);
-                        }
-                    } else {
-                        // Handle sales properties (default)
-                        const salesData = await this.loadSalesProperty(item.ref);
-                        if (salesData) {
-                            this.properties.push(salesData);
-                        }
+                // POST the text content to the server to build complete data
+                const textContent = await this.getSlideshowTextContent();
+                const buildResponse = await fetch('https://ivvdata.algarvevillaclub.com/datafeed/build_slideshow_data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'text_content': textContent
+                    })
+                });
+
+                if (buildResponse.ok) {
+                    const result = await buildResponse.json();
+                    if (result.success && result.data) {
+                        this.properties = result.data;
+                        console.log(`Loaded ${this.properties.length} curated items from server-built slideshow data`);
+                        this.preloadImages();
+                        return;
                     }
-                }
-
-                if (this.properties.length > 0) {
-                    console.log(`Loaded ${this.properties.length} curated items from slideshow list`);
-                    this.preloadImages();
-                    return;
                 }
             }
 
-            // Fallback to full API if list fails
+            // Fallback to full API if server API fails
             await this.loadFromAPI();
 
         } catch (error) {
-            console.error('Failed to load from slideshow list, falling back to API:', error);
+            console.error('Failed to load from server API, falling back to client API:', error);
             await this.loadFromAPI();
         }
+    }
+
+    async getSlideshowTextContent() {
+        """Get the content of slideshow-list.txt"""
+        try {
+            const response = await fetch('/slideshow-list.txt');
+            if (response.ok) {
+                return await response.text();
+            }
+        } catch (error) {
+            console.error('Failed to load slideshow text file:', error);
+        }
+        return '';
     }
 
     async loadFromAPI() {
@@ -147,74 +141,6 @@ class PropertySlideshow {
             this.properties = this.getMockProperties();
             this.preloadImages();
         }
-    }
-
-    async loadSalesProperty(propRef) {
-        try {
-            const corsProxy = 'https://api.allorigins.win/get?url=';
-            const apiUrl = encodeURIComponent('https://ivvdata.algarvevillaclub.com/datafeed/properties.json?type=saleonly');
-            const response = await fetch(corsProxy + apiUrl);
-
-            if (response.ok) {
-                const proxyData = await response.json();
-                const data = JSON.parse(proxyData.contents);
-
-                const property = data.properties.find(p =>
-                    p.propcode == propRef ||
-                    p.id == propRef
-                );
-
-                if (property && property.imagegallery && property.imagegallery.length > 0) {
-                    return {
-                        id: property.propcode,
-                        title: property.title || 'Untitled Property',
-                        price: this.formatPrice(property.price),
-                        location: property.areaname || 'Location not specified',
-                        bedrooms: property.bedrooms || 0,
-                        bathrooms: property.bathrooms || 0,
-                        area: property.propcode || 'N/A',
-                        type: property.ptypedescription || 'Property',
-                        description: property.description || 'No description available.',
-                        images: property.imagegallery.map(img => img.replace('pics_lg', 'pics')),
-                        mainImage: property.imagegallery[0].replace('pics_lg', 'pics')
-                    };
-                }
-            }
-        } catch (error) {
-            console.error(`Failed to load sales property ${propRef}:`, error);
-        }
-        return null;
-    }
-
-    async loadRentalProperty(propRef) {
-        // For now, return a placeholder rental property
-        // In the future, this could integrate with your rental API
-        return {
-            id: propRef,
-            title: `Rental Property ${propRef}`,
-            price: 'Price on request',
-            location: 'Algarve',
-            bedrooms: 'TBD',
-            bathrooms: '',
-            area: propRef,
-            type: 'Rental',
-            description: `Luxury rental property ${propRef}. Contact us for availability and pricing.`,
-            images: [],
-            mainImage: '',
-            isRental: true
-        };
-    }
-
-    getColorValue(colorName) {
-        const colors = {
-            'yellow': '#ffd700',
-            'red': '#ff4444',
-            'blue': '#4444ff',
-            'green': '#44ff44',
-            'orange': '#ffaa44',
-            'purple': '#aa44ff'
-        };
-        return colors[colorName.toLowerCase()] || colorName;
     }
 
     getMockProperties() {
